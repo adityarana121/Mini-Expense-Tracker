@@ -209,14 +209,6 @@ app.post('/api/budgets', (req, res) => {
   }
 });
 
-// Serve static frontend files in production
-const path = require('path');
-app.use(express.static(path.join(__dirname, '../client/dist')));
-
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
-
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
