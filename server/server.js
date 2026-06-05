@@ -213,7 +213,7 @@ app.post('/api/budgets', (req, res) => {
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
