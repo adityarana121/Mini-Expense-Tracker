@@ -1,52 +1,88 @@
-import React from 'react';
 import { formatCurrency } from '../utils/format';
-import { TrendingUp, Award, DollarSign } from 'lucide-react';
+import { Target, TrendingUp, RefreshCw, Car, Home } from 'lucide-react';
 
-const ExpenseSummary = ({ summary }) => {
+function ExpenseSummary({ summary }) {
   if (!summary) return null;
 
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-      <div className="glass-panel flex items-center gap-4">
-        <div className="btn-icon" style={{ background: 'rgba(42, 157, 143, 0.2)', color: 'var(--success-color)' }}>
-          <DollarSign size={32} />
+    <div className="flex flex-col gap-6">
+      
+      {/* Goals Card Mock */}
+      <div className="card">
+        <div className="card-header border-b pb-4 mb-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+          <h3 className="m-0 text-md flex items-center gap-2">
+            <Target size={18} className="text-muted" /> Goals
+          </h3>
+          <span className="text-sm text-muted cursor-pointer hover:text-main font-bold" onClick={() => alert('Advanced goals tracking coming soon!')}>See all &gt;</span>
         </div>
-        <div>
-          <h3 className="text-muted text-sm mb-1">Total This Month</h3>
-          <p className="text-2xl font-bold">{formatCurrency(summary.totalThisMonth)}</p>
+        
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="icon-wrapper" style={{ width: 36, height: 36, background: '#f8f9fc', color: '#10b981' }}>
+                <Home size={16} />
+              </div>
+              <span className="font-bold text-sm">House Deposit</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-sm font-bold">$5,800 <span className="text-muted font-normal">/ $10,000</span></div>
+              <div className="text-sm font-bold text-success">58%</div>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="icon-wrapper" style={{ width: 36, height: 36, background: '#f8f9fc', color: '#f97316' }}>
+                <Car size={16} />
+              </div>
+              <span className="font-bold text-sm">New Car</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-sm font-bold">$1,450 <span className="text-muted font-normal">/ $5,000</span></div>
+              <div className="text-sm font-bold text-orange-500" style={{ color: 'var(--accent-orange)' }}>29%</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="glass-panel flex items-center gap-4">
-        <div className="btn-icon" style={{ background: 'rgba(123, 44, 191, 0.2)', color: 'var(--primary-hover)' }}>
-          <Award size={32} />
+      {/* Highlights / Recurring Card */}
+      <div className="card">
+        <div className="card-header border-b pb-4 mb-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+          <h3 className="m-0 text-md flex items-center gap-2">
+            <TrendingUp size={18} className="text-muted" /> Spending Highlights
+          </h3>
+          <span className="text-sm text-muted cursor-pointer hover:text-main font-bold">See all &gt;</span>
         </div>
-        <div>
-          <h3 className="text-muted text-sm mb-1">Highest Single Expense</h3>
-          <p className="text-xl font-bold">
-            {summary.highestExpense ? formatCurrency(summary.highestExpense.amount) : '-'}
-          </p>
-          <p className="text-xs text-muted">
-            {summary.highestExpense ? summary.highestExpense.category : ''}
-          </p>
-        </div>
-      </div>
+        
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="icon-wrapper" style={{ width: 36, height: 36, background: '#f8f9fc', color: '#ef4444' }}>
+                <TrendingUp size={16} />
+              </div>
+              <span className="font-bold text-sm">Highest Expense</span>
+            </div>
+            <div className="text-sm font-bold">
+              {summary.highestExpense ? formatCurrency(summary.highestExpense.amount) : '$0.00'}
+            </div>
+          </div>
 
-      <div className="glass-panel flex items-center gap-4">
-        <div className="btn-icon" style={{ background: 'rgba(230, 57, 70, 0.2)', color: 'var(--danger-color)' }}>
-          <TrendingUp size={32} />
-        </div>
-        <div>
-          <h3 className="text-muted text-sm mb-1">Top Category</h3>
-          <p className="text-xl font-bold">
-            {summary.categoryTotals.length > 0 
-              ? [...summary.categoryTotals].sort((a, b) => b.total - a.total)[0].category 
-              : '-'}
-          </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="icon-wrapper" style={{ width: 36, height: 36, background: '#f8f9fc', color: '#8b5cf6' }}>
+                <RefreshCw size={16} />
+              </div>
+              <span className="font-bold text-sm">Active Categories</span>
+            </div>
+            <div className="text-sm font-bold">
+              {summary.categoryTotals?.length || 0}
+            </div>
+          </div>
         </div>
       </div>
+      
     </div>
   );
-};
+}
 
 export default ExpenseSummary;

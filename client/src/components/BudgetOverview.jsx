@@ -1,108 +1,129 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { formatCurrency } from '../utils/format';
-import { Target, Check, Edit2 } from 'lucide-react';
+import { LayoutDashboard } from 'lucide-react';
 
-const CATEGORIES = ['Food', 'Transport', 'Bills', 'Entertainment', 'Other'];
+function BudgetOverview({ budgets, summary, onUpdateBudget }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCategory, setEditCategory] = useState('');
+  const [editAmount, setEditAmount] = useState('');
 
-const BudgetOverview = ({ budgets, summary, onUpdateBudget }) => {
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [editValue, setEditValue] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const totalBudget = budgets.reduce((acc, b) => acc + b.amount, 0);
+  const COLORS = ['#8b5cf6', '#10b981', '#f97316', '#f59e0b', '#3b82f6', '#ec4899'];
 
-  const handleEditClick = (category, currentAmount) => {
-    setEditingCategory(category);
-    setEditValue(currentAmount ? currentAmount.toString() : '');
+  const getCategorySpend = (category) => {
+    if (!summary || !summary.categoryTotals) return 0;
+    const cat = summary.categoryTotals.find(c => c.category === category);
+    return cat ? cat.total : 0;
   };
 
-  const handleSave = async (category) => {
-    const val = parseFloat(editValue);
-    if (isNaN(val) || val < 0) return;
-    
-    setIsSubmitting(true);
-    await onUpdateBudget(category, val);
-    setIsSubmitting(false);
-    setEditingCategory(null);
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (editCategory && editAmount) {
+      onUpdateBudget(editCategory, parseFloat(editAmount));
+      setIsEditing(false);
+      setEditCategory('');
+      setEditAmount('');
+    }
   };
-
-  // Convert summary category totals array to map for easy lookup
-  const currentSpending = (summary?.categoryTotals || []).reduce((acc, curr) => {
-    acc[curr.category] = curr.total;
-    return acc;
-  }, {});
-
-  const budgetMap = budgets.reduce((acc, curr) => {
-    acc[curr.category] = curr.amount;
-    return acc;
-  }, {});
 
   return (
-    <div className="glass-panel mb-8">
-      <div className="flex items-center gap-2 mb-6">
-        <Target className="text-primary" style={{ color: 'var(--primary-color)' }} />
-        <h3 className="text-xl title-gradient m-0">Monthly Budgets</h3>
+    <div className="card">
+      <div className="card-header border-b pb-4 mb-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <div>
+          <h3 className="m-0 text-md text-muted font-normal mb-1">Total budgets</h3>
+          <h2 className="text-2xl m-0">{formatCurrency(totalBudget)}</h2>
+        </div>
+        <button className="btn-outline text-xs" onClick={() => setIsEditing(!isEditing)}>
+          Expenses ▾
+        </button>
       </div>
-      
-      <div className="grid md:grid-cols-2 gap-6">
-        {CATEGORIES.map(category => {
-          const limit = budgetMap[category] || 0;
-          const spent = currentSpending[category] || 0;
-          const isExceeded = limit > 0 && spent > limit;
-          const percentage = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
-          const isEditing = editingCategory === category;
 
-          return (
-            <div key={category} className="budget-item">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-bold">{category}</span>
-                {isEditing ? (
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="number" 
-                      value={editValue}
-                      onChange={e => setEditValue(e.target.value)}
-                      placeholder="0.00"
-                      className="w-24 p-1 text-sm"
-                      autoFocus
-                    />
-                    <button 
-                      className="btn-icon" 
-                      style={{ color: 'var(--success-color)' }}
-                      onClick={() => handleSave(category)}
-                      disabled={isSubmitting}
-                    >
-                      <Check size={16} />
-                    </button>
+      {isEditing && (
+        <form onSubmit={handleSave} className="mb-6 p-4 rounded-xl" style={{ background: '#f8f9fc', border: '1px solid var(--border-color)' }}>
+          <div className="flex flex-col gap-3">
+            <select 
+              value={editCategory} 
+              onChange={e => setEditCategory(e.target.value)}
+              required
+              style={{ background: 'white' }}
+            >
+              <option value="">Select Category...</option>
+              <option value="Food">Food</option>
+              <option value="Transport">Transport</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Bills">Bills</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Other">Other</option>
+            </select>
+            <input 
+              type="number" 
+              value={editAmount} 
+              onChange={e => setEditAmount(e.target.value)}
+              placeholder="Budget Amount ($)"
+              min="0"
+              step="0.01"
+              required
+              style={{ background: 'white' }}
+            />
+            <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+              Save Budget
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="mb-6">
+        <h4 className="text-xs text-muted mb-2 font-bold">Allocation</h4>
+        <div className="progress-segmented-container">
+          {budgets.length > 0 ? budgets.map((budget, idx) => {
+            const percentage = (budget.amount / totalBudget) * 100;
+            return (
+              <div 
+                key={budget.category} 
+                className="progress-segment" 
+                style={{ width: `${percentage}%`, background: COLORS[idx % COLORS.length] }}
+                title={`${budget.category}: ${formatCurrency(budget.amount)}`}
+              ></div>
+            );
+          }) : <div className="progress-segment" style={{ width: '100%', background: '#e5e7eb' }}></div>}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-5 mt-6">
+        {budgets.length === 0 ? (
+          <p className="text-muted text-sm text-center">No budgets set.</p>
+        ) : (
+          budgets.map((budget, idx) => {
+            const spent = getCategorySpend(budget.category);
+            const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
+            const isExceeded = percentage > 100;
+            
+            return (
+              <div key={budget.category} className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: COLORS[idx % COLORS.length] }}></div>
+                  <div>
+                    <h5 className="m-0 text-sm">{budget.category}</h5>
+                    <p className={`m-0 text-xs mt-1 ${isExceeded ? 'text-danger font-bold' : 'text-muted'}`}>
+                      -{formatCurrency(spent)} spent
+                    </p>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted">
-                      {formatCurrency(spent)} / {limit > 0 ? formatCurrency(limit) : 'No limit'}
-                    </span>
-                    <button 
-                      className="btn-icon p-1" 
-                      onClick={() => handleEditClick(category, limit)}
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                  </div>
-                )}
+                </div>
+                <div className="text-right">
+                  <h5 className="m-0 text-sm font-bold" style={{ color: COLORS[idx % COLORS.length] }}>
+                    {formatCurrency(budget.amount)} <span className="text-muted font-normal text-xs">({percentage.toFixed(1)}%)</span>
+                  </h5>
+                  <p className="m-0 text-xs text-muted mt-1">
+                    Budget {formatCurrency(budget.amount)}
+                  </p>
+                </div>
               </div>
-              
-              <div className="progress-bg">
-                <div 
-                  className={`progress-bar ${isExceeded ? 'exceeded' : ''}`} 
-                  style={{ width: `${percentage}%` }}
-                ></div>
-              </div>
-              {isExceeded && (
-                <p className="text-xs text-danger mt-1">Budget exceeded by {formatCurrency(spent - limit)}!</p>
-              )}
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );
-};
+}
 
 export default BudgetOverview;

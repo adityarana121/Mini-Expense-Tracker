@@ -6,6 +6,8 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
+export default api;
+
 export const fetchExpenses = async (filters = {}) => {
   const params = new URLSearchParams();
   if (filters.category && filters.category !== 'All') params.append('category', filters.category);

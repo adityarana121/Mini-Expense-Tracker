@@ -4,9 +4,14 @@ import { X } from 'lucide-react';
 const CATEGORIES = ['Food', 'Transport', 'Bills', 'Entertainment', 'Other'];
 
 const ExpenseForm = ({ initialData, onSubmit, onCancel }) => {
+  const getLocalDate = () => {
+    const d = new Date();
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+  };
+
   const [amount, setAmount] = useState(initialData ? initialData.amount.toString() : '');
   const [category, setCategory] = useState(initialData ? initialData.category : '');
-  const [date, setDate] = useState(initialData ? initialData.date : new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(initialData ? initialData.date : getLocalDate());
   const [note, setNote] = useState(initialData?.note || '');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,7 +25,7 @@ const ExpenseForm = ({ initialData, onSubmit, onCancel }) => {
     } else {
       setAmount('');
       setCategory('');
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(getLocalDate());
       setNote('');
     }
   }, [initialData]);
@@ -69,7 +74,7 @@ const ExpenseForm = ({ initialData, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="glass-panel" style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }}>
       <button 
         className="btn-icon" 
         onClick={onCancel}
@@ -79,7 +84,7 @@ const ExpenseForm = ({ initialData, onSubmit, onCancel }) => {
         <X size={20} />
       </button>
       
-      <h2 className="text-xl title-gradient mb-4">
+      <h2 className="text-xl mb-4">
         {initialData ? 'Edit Expense' : 'Add New Expense'}
       </h2>
 
@@ -122,7 +127,7 @@ const ExpenseForm = ({ initialData, onSubmit, onCancel }) => {
             type="date"
             id="date"
             value={date}
-            max={new Date().toISOString().split('T')[0]}
+            max={getLocalDate()}
             onChange={(e) => setDate(e.target.value)}
             required
           />

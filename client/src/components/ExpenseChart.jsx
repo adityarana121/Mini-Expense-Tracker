@@ -1,53 +1,77 @@
-import React from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { formatCurrency } from '../utils/format';
 
-// Using brighter, more vibrant colors for better contrast on dark mode
-const COLORS = ['#b5179e', '#4cc9f0', '#fee440', '#f72585', '#7209b7', '#4361ee'];
+function ExpenseChart({ summary, expenses = [] }) {
+  if (!summary || expenses.length === 0) {
+    return (
+      <div className="card flex items-center justify-center h-full text-muted">
+        No spending data for this month.
+      </div>
+    );
+  }
 
-const ExpenseChart = ({ summary }) => {
-  if (!summary || summary.categoryTotals.length === 0) return null;
+  const total = summary.totalThisMonth || 0;
+  
+  // Group expenses by date (Not cumulative, just daily totals)
+  const expensesByDate = expenses.reduce((acc, curr) => {
+    const dateStr = curr.date.split('T')[0];
+    acc[dateStr] = (acc[dateStr] || 0) + curr.amount;
+    return acc;
+  }, {});
+
+  const sortedDates = Object.keys(expensesByDate).sort();
+  
+  const data = sortedDates.map(date => {
+    const dateObj = new Date(date);
+    return {
+      date: dateObj.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+      amount: expensesByDate[date]
+    };
+  });
 
   return (
-    <div className="glass-panel" style={{ height: '350px' }}>
-      <h3 className="text-xl title-gradient mb-4">Expenses by Category</h3>
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={summary.categoryTotals}
-            dataKey="total"
-            nameKey="category"
-            cx="50%"
-            cy="50%"
-            outerRadius={100}
-            innerRadius={60}
-            fill="#8884d8"
-            label={(props) => {
-              const { cx, cy, midAngle, outerRadius, name, percent } = props;
-              const RADIAN = Math.PI / 180;
-              const radius = outerRadius + 20;
-              const x = cx + radius * Math.cos(-midAngle * RADIAN);
-              const y = cy + radius * Math.sin(-midAngle * RADIAN);
-              return (
-                <text x={x} y={y} fill="#ffffff" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={14}>
-                  {`${name} ${(percent * 100).toFixed(0)}%`}
-                </text>
-              );
-            }}
-          >
-            {summary.categoryTotals.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip 
-            formatter={(value) => [`$${value.toFixed(2)}`, 'Total']}
-            contentStyle={{ backgroundColor: 'rgba(30, 30, 35, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
-            itemStyle={{ color: '#fff' }}
-          />
-          <Legend formatter={(value) => <span style={{ color: '#ffffff' }}>{value}</span>} />
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="card flex flex-col">
+      <div className="card-header border-b pb-4 mb-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <div>
+          <h3 className="m-0 text-md text-muted font-normal mb-1">Spending this month</h3>
+          <h2 className="text-2xl m-0">{formatCurrency(total)}</h2>
+        </div>
+        <button className="btn-outline text-xs text-muted border-none p-0">
+          This month vs. last month ▾
+        </button>
+      </div>
+
+      <div className="flex gap-4 text-xs font-bold mb-6 mt-2">
+        <div className="flex items-center gap-2">
+          <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: 'var(--primary-color)' }}></div>
+          <span>Daily Spend</span>
+        </div>
+      </div>
+
+      <div style={{ width: '100%', height: '220px', flex: 1 }}>
+        <ResponsiveContainer>
+          <BarChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f1f5" />
+            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8e8e93' }} dy={10} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8e8e93' }} tickFormatter={(val) => `$${val}`} />
+            <Tooltip 
+              formatter={(value) => formatCurrency(value)}
+              contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}
+              cursor={{ fill: '#f3f4f6' }}
+            />
+            <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+              {data.map((entry, index) => {
+                const colors = ['#8b5cf6', '#3b82f6', '#0ea5e9', '#10b981', '#f59e0b', '#f97316', '#ec4899', '#8b5cf6'];
+                return (
+                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                );
+              })}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
-};
+}
 
 export default ExpenseChart;
