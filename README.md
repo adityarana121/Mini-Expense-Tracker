@@ -39,6 +39,13 @@ npm run dev
 ```
 The frontend will start on `http://localhost:5173`. Open this URL in your browser.
 
+### 3. Run with Docker (Optional)
+If you have Docker installed, you can spin up the entire full-stack application with a single command from the root directory:
+```bash
+docker-compose up --build
+```
+This will start the backend on port `5000` and serve the frontend on port `80`. Open `http://localhost` in your browser.
+
 ## API Documentation
 
 ### `GET /api/expenses`
