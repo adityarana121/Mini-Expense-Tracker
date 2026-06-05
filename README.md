@@ -3,8 +3,8 @@
 A modern, sleek, and minimalist web application designed to help users track personal expenses, establish category budgets, and visualize spending habits through dynamic charts. This project serves as a comprehensive Personal Finance Dashboard, balancing complex front-end UI state with robust back-end CRUD operations and data aggregation.
 
 ## Live Demo Links
-[Deploy Link Placeholder - Insert URL Here]
-
+- **Frontend (Vercel):** [https://mini-expense-tracker-red.vercel.app/](https://mini-expense-tracker-red.vercel.app/)
+- **Backend API (Render):** [https://mini-expense-backend.onrender.com](https://mini-expense-backend.onrender.com)
 ## Tech Stack
 **Frontend:**
 - **React (via Vite):** Chosen for its lightning-fast Hot Module Replacement (HMR) and highly optimized production builds.
